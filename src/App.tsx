@@ -3,7 +3,7 @@ import { UploadFile } from "./components/UploadFile";
 import { Button, Label, Select, TextInput, Toast } from "flowbite-react";
 
 function App() {
-  const API_URL = "http://localhost:3000/api/live";
+  const API_URL = "https://api-live.teknokreasi.site/api/live";
   const [file, setFile] = useState<File | null>(null);
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
