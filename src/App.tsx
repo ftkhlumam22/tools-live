@@ -137,15 +137,17 @@ function App() {
     <main>
       <div className="flex w-full justify-end">
         {loading && (
-          <Toast className={`absolute z-10 mx-7 mt-10 bg-zinc-100 shadow-md`}>
-            <div className="progress-bar-container">
+          <Toast className={`absolute z-10 mx-7 mt-10 bg-zinc-50 shadow-md`}>
+            <div>
               <p className="w-full text-black">Uploading File:</p>
-              <p className="w-full text-black">{filename}</p>
-              <div
-                className="progress-bar"
-                style={{ width: `${uploadProgress}%` }}
-              >
-                {uploadProgress}%
+              <p className="mb-5 w-full text-black">{filename}</p>
+              <div className="progress-bar-container bg-gray-200">
+                <div
+                  className="progress-bar"
+                  style={{ width: `${uploadProgress}%` }}
+                >
+                  {uploadProgress}%
+                </div>
               </div>
             </div>
           </Toast>
