@@ -3,7 +3,7 @@ import { UploadFile } from "./components/UploadFile";
 import { Button, Label, Select, TextInput, Toast } from "flowbite-react";
 
 function App() {
-  const API_URL = "https://api-live.teknokreasi.site/api/live";
+  const API_URL = "http://localhost:3000/api/live";
   const [file, setFile] = useState<File | null>(null);
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
@@ -13,6 +13,7 @@ function App() {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [dataVideo, setDataVideo] = useState<string[] | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [filename, setFilename] = useState("");
 
   // New state for selected video and stream key
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
@@ -40,6 +41,8 @@ function App() {
     if (!file) return;
     const chunkSize = 5 * 1024 * 1024; // 5MB per chunk
     const totalChunks = Math.ceil(file.size / chunkSize);
+    setFilename(file.name);
+    setUploadProgress(0); // Reset progress state
 
     setLoading(true);
     for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
@@ -61,7 +64,11 @@ function App() {
         if (response.ok) {
           const progress = Math.round(((chunkIndex + 1) / totalChunks) * 100);
           setUploadProgress(progress); // Update the progress state
-          await getDataVideo();
+          if (progress === 100) {
+            showToast("Video uploaded successfully", "success");
+            setFile(null);
+            setVideoUrl(null);
+          }
         } else {
           showToast(`Error uploading chunk: ${await response.text()}`, "error");
           setUploadProgress(0);
@@ -73,6 +80,7 @@ function App() {
         break;
       }
     }
+    await getDataVideo();
     setLoading(false);
   };
 
@@ -127,14 +135,21 @@ function App() {
 
   return (
     <main>
-      {loading && (
-        <div className="progress-bar-container">
-          <div className="progress-bar" style={{ width: `${uploadProgress}%` }}>
-            {uploadProgress}%
-          </div>
-        </div>
-      )}
       <div className="flex w-full justify-end">
+        {loading && (
+          <Toast className={`absolute z-10 mx-7 mt-10 bg-zinc-100 shadow-md`}>
+            <div className="progress-bar-container">
+              <p className="w-full text-black">Uploading File:</p>
+              <p className="w-full text-black">{filename}</p>
+              <div
+                className="progress-bar"
+                style={{ width: `${uploadProgress}%` }}
+              >
+                {uploadProgress}%
+              </div>
+            </div>
+          </Toast>
+        )}
         {toastVisible && (
           <Toast
             className={`absolute z-10 mx-7 mt-10 ${toastType === "success" ? "bg-green-500" : "bg-red-500"}`}
