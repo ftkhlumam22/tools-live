@@ -1,3 +1,17 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.progress-bar-container {
+  width: 100%;
+  background: #e0e0e0;
+  border-radius: 5px;
+}
+
+.progress-bar {
+  height: 20px;
+  background: #76c7c0;
+  border-radius: 5px;
+  text-align: center;
+  color: white;
+}

@@ -52,13 +52,14 @@ export function UploadFile({ onFileChange, videoUrl, setVideoUrl }: UploadFilePr
             drop
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            MP4 video only. (Max. 100mb)
+            MP4 video only. (Max. 10gb)
           </p>
         </div>
         <FileInput
           id="dropzone-file"
           className="hidden"
           onChange={handleFileChange}
+          accept="video/mp4"
         />
         {videoUrl && (
           <div className="absolute inset-0 flex items-center justify-center">

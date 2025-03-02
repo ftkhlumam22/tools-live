@@ -12,6 +12,7 @@ function App() {
   const [streamLoading, setStreamLoading] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [dataVideo, setDataVideo] = useState<string[] | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   // New state for selected video and stream key
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
@@ -33,31 +34,46 @@ function App() {
   const resetForm = () => {
     setSelectedVideo(null);
     setStreamKey("");
-  }
+  };
 
   const handleUpload = async () => {
     if (!file) return;
-    const formData = new FormData();
-    formData.append("video", file);
+    const chunkSize = 5 * 1024 * 1024; // 5MB per chunk
+    const totalChunks = Math.ceil(file.size / chunkSize);
+
     setLoading(true);
-    try {
-      const response = await fetch(`${API_URL}/video`, {
-        method: "POST",
-        body: formData,
-      });
-      if (response.ok) {
-        showToast("File uploaded successfully!", "success");
-        setFile(null);
-        setVideoUrl(null);
-        getDataVideo();
-      } else {
-        showToast(`Error uploading file: ${await response.text()}`, "error");
+    for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+      const start = chunkIndex * chunkSize;
+      const end = Math.min(start + chunkSize, file.size);
+      const chunk = file.slice(start, end);
+      const formData = new FormData();
+      formData.append("video", chunk);
+      formData.append("chunkIndex", chunkIndex.toString());
+      formData.append("totalChunks", totalChunks.toString());
+      formData.append("filename", file.name);
+
+      try {
+        const response = await fetch(`${API_URL}/video`, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (response.ok) {
+          const progress = Math.round(((chunkIndex + 1) / totalChunks) * 100);
+          setUploadProgress(progress); // Update the progress state
+          await getDataVideo();
+        } else {
+          showToast(`Error uploading chunk: ${await response.text()}`, "error");
+          setUploadProgress(0);
+          break;
+        }
+      } catch (error) {
+        showToast("Error in upload: " + error, "error");
+        setUploadProgress(0);
+        break;
       }
-    } catch (error) {
-      showToast("Error in upload: " + error, "error");
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   };
 
   const handleStartStreaming = async () => {
@@ -111,6 +127,13 @@ function App() {
 
   return (
     <main>
+      {loading && (
+        <div className="progress-bar-container">
+          <div className="progress-bar" style={{ width: `${uploadProgress}%` }}>
+            {uploadProgress}%
+          </div>
+        </div>
+      )}
       <div className="flex w-full justify-end">
         {toastVisible && (
           <Toast
